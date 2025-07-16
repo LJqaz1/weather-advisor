@@ -29,7 +29,7 @@ your_project/
 
 ### 1️⃣ 克隆项目 & 创建虚拟环境
 
-git clone https://your-repo-url
+git clone https://github.com/LJqaz1/weather-advisor.git
 cd your_project
 python3 -m venv venv
 source venv/bin/activate
@@ -84,4 +84,4 @@ Shinjuku 当前气温：22°C，天气：小雨 🌧
 
 ## 📬 作者信息
 开发者：LJ
-联系方式：可按需要添加 GitHub / 邮箱链接
+联系方式：(https://github.com/LJqaz1/weather-advisor.git)
