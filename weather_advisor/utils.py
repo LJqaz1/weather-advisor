@@ -1,39 +1,91 @@
-from datetime import datetime
-
-def get_time_remark():
-    """
-    根据当前系统时间判断是早上、中午或晚上，返回提示语。
-    """
-    hour = datetime.now().hour
-    if 5 <= hour < 12:
-        return "早上出门，气温可能偏凉，要注意保暖🌅"
-    elif 12 <= hour < 17:
-        return "中午气温较稳定，适合出行🌤"
-    else:
-        return "晚上可能降温，建议多带一件备用衣物🌃"
-
-def is_weekend():
-    """
-    判断今天是否是周六或周日，返回布尔值。
-    """
-    weekday = datetime.now().weekday()  # 0=周一，6=周日
-    return weekday >= 5
-
-def format_weather_tip(city, temp, desc, wear_tip, time_tip):
-    """
-    构造完整的天气提示语句，将各部分信息格式化组合。
-    """
-    weekend_label = "（周末）" if is_weekend() else ""
-    tip = f"{city} 当前气温：{temp}°C，天气：{desc} {weekend_label}\n"
-    tip += f"穿衣建议：{wear_tip}。{time_tip}"
-    return tip
-
+# weather_advisor/utils.py
+import datetime
 import requests
+from typing import Tuple, Optional
 
-def get_city_by_ip():
+def get_time_remark(lang: str = 'ja') -> str:
+    """
+    根据当前时间返回时间段描述
+    """
+    current_hour = datetime.datetime.now().hour
+    
+    time_remarks = {
+        'ja': {
+            'morning': '朝は涼しいです',
+            'afternoon': '日中は暖かくなります', 
+            'evening': '夜は冷え込むでしょう'
+        },
+        'zh': {
+            'morning': '早上比较凉爽',
+            'afternoon': '下午会比较温暖',
+            'evening': '晚上气温会下降'
+        },
+        'en': {
+            'morning': 'Morning temperatures are cool',
+            'afternoon': 'Afternoon will be warmer',
+            'evening': 'Evening temperatures expected to drop'
+        }
+    }
+    
+    remarks = time_remarks.get(lang, time_remarks['ja'])
+    
+    if 6 <= current_hour < 12:
+        return remarks['morning']
+    elif 12 <= current_hour < 18:
+        return remarks['afternoon']
+    else:
+        return remarks['evening']
+
+def format_weather_tip(city: str, temp: float, desc: str, suggestion: str, 
+                      time_tip: str, lang: str = 'ja') -> str:
+    """
+    格式化天气提示信息
+    """
+    templates = {
+        'ja': f"""🌤️  {city}の天気情報
+気温: {temp}℃
+天気: {desc}
+💡 服装アドバイス: {suggestion}
+⏰ {time_tip}""",
+
+        'zh': f"""🌤️  {city}天气信息
+气温: {temp}℃
+天气: {desc}
+💡 穿衣建议: {suggestion}
+⏰ {time_tip}""",
+
+        'en': f"""🌤️  Weather in {city}
+Temperature: {temp}℃
+Weather: {desc}
+💡 Clothing Advice: {suggestion}
+⏰ {time_tip}"""
+    }
+    
+    return templates.get(lang, templates['ja'])
+
+def get_city_by_ip() -> str:
+    """
+    通过IP获取城市信息（简单实现）
+    """
     try:
-        response = requests.get("https://ipinfo.io/json", timeout=5)
-        data = response.json()
-        return data.get("city", "Tokyo")
-    except Exception:
-        return "Tokyo"  # 默认城市
+        response = requests.get('http://ipapi.co/city/', timeout=5)
+        return response.text.strip() or "Tokyo"
+    except:
+        return "Tokyo"
+
+def normalize_city(city: str) -> str:
+    """
+    城市名称标准化映射
+    """
+    city_mapping = {
+        '东京': 'Tokyo',
+        '北京': 'Beijing',
+        '上海': 'Shanghai',
+        '大阪': 'Osaka',
+        '纽约': 'New York',
+        '伦敦': 'London',
+        'とうきょう': 'Tokyo',
+        'おおさか': 'Osaka'
+    }
+    
+    return city_mapping.get(city, city)
